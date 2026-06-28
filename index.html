@@ -3,100 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>我的第一个 AI 智能时钟</title>
+    <title>Multi-Style E-Ink Clock</title>
     <style>
-        /* CSS 样式：负责让界面变得极其好看 */
-        * {
+        /* =========================================
+           1. 基础样式 (基础墨水屏质感)
+           ========================================= */
+        body {
+            background-color: #FFFFFF;
+            color: #000000;
             margin: 0;
             padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
-            background: #0f172a; /* 深色科技感背景 */
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            height: 100vh;
+            overflow: hidden;
+            user-select: none;
+            transition: background-color 0.3s ease;
         }
 
+        /* 核心容器 */
         .clock-container {
-            position: relative;
-            background: rgba(255, 255, 255, 0.05);
-            padding: 40px 60px;
-            border-radius: 20px;
-            backdrop-filter: blur(10px); /* 毛玻璃效果 */
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
             text-align: center;
+            transition: transform 0.3s ease; /* 用于防烧屏和风格切换 */
+            will-change: transform;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
         }
 
-        .time {
-            font-size: 20rem;
-            font-weight: 700;
-            color: #38bdf8; /* 天蓝色数字 */
-            letter-spacing: 2px;
-            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
-        }
+        .time { line-height: 1; }
+        .date { font-weight: 400; }
 
-        .date {
-            font-size: 1.5rem;
-            color: #94a3b8;
-            margin-top: 10px;
+        /* =========================================
+           2. 风格定义 (三种不同的黑白美学)
+           ========================================= */
+
+        /* --- 风格 A: Paper Serif (经典纸质书) --- */
+        body.style-a .time {
+            font-family: "Times New Roman", Georgia, "Source Han Serif SC", serif;
+            font-size: 11rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+            letter-spacing: -2px;
+        }
+        body.style-a .date {
+            font-family: "Times New Roman", Georgia, "Source Han Serif SC", serif;
+            font-size: 2.2rem;
             letter-spacing: 1px;
         }
 
-        /* 装饰用的小光晕 */
-        .clock-container::before {
-            content: '';
+        /* --- 风格 B: Digital Mono (复古液晶数字) --- */
+        /* 模拟像素/段式结构，调用等宽字体 */
+        body.style-b .time {
+            font-family: "Courier New", Courier, "Noto Mono", monospace;
+            font-size: 10rem;
+            font-weight: 700;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.15); /* 微弱的液晶重影感 */
+        }
+        body.style-b .date {
+            font-family: "Courier New", Courier, "Noto Mono", monospace;
+            font-size: 1.8rem;
+            text-transform: uppercase;
+        }
+
+        /* --- 风格 C: Bauhaus Minimal (现代几何极简) --- */
+        /* 极致的超大数字，现代无衬线 */
+        body.style-c .time {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 15rem;
+            font-weight: 800;
+            letter-spacing: -10px;
+            margin-bottom: 0rem;
+            margin-top: -2rem; /* 向上微调，视觉居中 */
+        }
+        body.style-c .date {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+            font-size: 1.6rem;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            opacity: 0.8;
+        }
+
+
+        /* =========================================
+           3. 控制交互 UI (底部切换按钮)
+           ========================================= */
+        .controls {
             position: absolute;
-            top: -2px; left: -2px; right: -2px; bottom: -2px;
-            background: linear-gradient(45deg, #38bdf8, #818cf8);
-            border-radius: 22px;
-            z-index: -1;
-            opacity: 0.3;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+            z-index: 100;
+            opacity: 0.3; /* 默认低透明度，防烧屏 */
+            transition: opacity 0.3s ease;
+        }
+        
+        .controls:hover {
+            opacity: 1; /* 鼠标悬停时可见 */
+        }
+
+        .style-btn {
+            background: none;
+            border: 1px solid #000000;
+            color: #000000;
+            padding: 5px 12px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .style-btn:hover, .style-btn.active {
+            background-color: #000000;
+            color: #FFFFFF;
+        }
+        
+        /* 提示全屏的小图标 */
+        .fullscreen-tip {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 1.2rem;
+            opacity: 0.2;
+            cursor: pointer;
+        }
+
+        /* =========================================
+           4. 响应式与防烧屏
+           ========================================= */
+        @media (max-width: 600px) {
+            body.style-a .time { font-size: 6rem; }
+            body.style-a .date { font-size: 1.4rem; }
+            
+            body.style-b .time { font-size: 5.5rem; }
+            body.style-b .date { font-size: 1.1rem; }
+            
+            body.style-c .time { font-size: 8rem; letter-spacing: -5px;}
+            body.style-c .date { font-size: 1rem; }
         }
     </style>
 </head>
-<body>
+<!-- 默认激活风格 A -->
+<body class="style-a">
 
-    <!-- HTML 结构：定义时钟的骨架 -->
-    <div class="clock-container">
-        <div class="time" id="timeDisplay">00:00:00</div>
-        <div class="date" id="dateDisplay">2026年01月01日 星期一</div>
+    <!-- 核心时钟显示区 -->
+    <div class="clock-container" id="clockContainer">
+        <div class="time" id="timeDisplay">00:00</div>
+        <div class="date" id="dateDisplay">Loading...</div>
     </div>
+    
+    <!-- 底部控制按钮 -->
+    <div class="controls" id="controls">
+        <button class="style-btn active" onclick="setStyle('a')">Style A (Serif)</button>
+        <button class="style-btn" onclick="setStyle('b')">Style B (Digital)</button>
+        <button class="style-btn" onclick="setStyle('c')">Style C (Minimal)</button>
+    </div>
+    
+    <div class="fullscreen-tip" onclick="toggleFullscreen()" title="点击全屏">⛶</div>
 
-    <!-- JavaScript 代码：负责让时钟真正走动起来 -->
     <script>
+        // 1. 时间更新逻辑
         function updateClock() {
             const now = new Date();
-
-            // 1. 获取时间并格式化 (补零让画面更整齐)
+            
+            // 处理时间 (HH:MM)
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            
-            // 2. 将时间渲染到网页上
-            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}`;
 
-            // 3. 获取并格式化日期
+            // 处理日期与星期
             const year = now.getFullYear();
-            const month = String(now.getMonth() + 1).padStart(2, '0');
-            const date = String(now.getDate()).padStart(2, '0');
+            const month = now.getMonth() + 1;
+            const date = now.getDate();
+            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const dayOfWeek = days[now.getDay()];
             
-            const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
-            const dayOfWeek = weekDays[now.getDay()];
-
-            // 4. 将日期渲染到网页上
             document.getElementById('dateDisplay').textContent = `${year}年${month}月${date}日 ${dayOfWeek}`;
+
+            // 2. 模拟电子墨水屏防烧屏：每分钟微调位置
+            const container = document.getElementById('clockContainer');
+            const randomX = (Math.random() * 4 - 2).toFixed(1); // -2px 到 2px
+            const randomY = (Math.random() * 4 - 2).toFixed(1);
+            container.style.transform = `translate(${randomX}px, ${randomY}px)`;
         }
 
-        // 每隔 1000 毫秒（1秒）执行一次 updateClock 函数
-        setInterval(updateClock, 1000);
+        // 3. 风格切换逻辑
+        function setStyle(styleName) {
+            // 移除 body 上现有的所有风格类
+            document.body.classList.remove('style-a', 'style-b', 'style-c');
+            // 添加新风格类
+            document.body.classList.add(`style-${styleName}`);
+            
+            // 更新按钮状态
+            const buttons = document.querySelectorAll('.style-btn');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            const activeButton = document.querySelector(`.style-btn[onclick="setStyle('${styleName}')"]`);
+            if (activeButton) activeButton.classList.add('active');
+            
+            // 风格切换后强制刷新一次防烧屏位置，防止重叠
+            updateClock();
+        }
 
-        // 页面刚加载时立刻执行一次，避免首屏出现全零延迟
+        // 4. 全屏功能
+        function toggleFullscreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(err => {
+                    alert(`无法进入全屏: ${err.message}`);
+                });
+            } else {
+                document.exitFullscreen();
+            }
+        }
+
+        // 5. 初始化
         updateClock();
+        // 优化性能：每秒检查时间，但只需在分钟变化时更新 UI（减少渲染次数有利于保护旧设备）
+        let lastMinute = -1;
+        setInterval(() => {
+            const currentMinute = new Date().getMinutes();
+            if (currentMinute !== lastMinute) {
+                updateClock();
+                lastMinute = currentMinute;
+            }
+        }, 1000);
     </script>
 </body>
 </html>
