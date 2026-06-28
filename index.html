@@ -1,1 +1,102 @@
-  test
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的第一个 AI 智能时钟</title>
+    <style>
+        /* CSS 样式：负责让界面变得极其好看 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: #0f172a; /* 深色科技感背景 */
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .clock-container {
+            position: relative;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 40px 60px;
+            border-radius: 20px;
+            backdrop-filter: blur(10px); /* 毛玻璃效果 */
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 25px 45px rgba(0, 0, 0, 0.2);
+            text-align: center;
+        }
+
+        .time {
+            font-size: 20rem;
+            font-weight: 700;
+            color: #38bdf8; /* 天蓝色数字 */
+            letter-spacing: 2px;
+            text-shadow: 0 0 20px rgba(56, 189, 248, 0.5);
+        }
+
+        .date {
+            font-size: 1.5rem;
+            color: #94a3b8;
+            margin-top: 10px;
+            letter-spacing: 1px;
+        }
+
+        /* 装饰用的小光晕 */
+        .clock-container::before {
+            content: '';
+            position: absolute;
+            top: -2px; left: -2px; right: -2px; bottom: -2px;
+            background: linear-gradient(45deg, #38bdf8, #818cf8);
+            border-radius: 22px;
+            z-index: -1;
+            opacity: 0.3;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HTML 结构：定义时钟的骨架 -->
+    <div class="clock-container">
+        <div class="time" id="timeDisplay">00:00:00</div>
+        <div class="date" id="dateDisplay">2026年01月01日 星期一</div>
+    </div>
+
+    <!-- JavaScript 代码：负责让时钟真正走动起来 -->
+    <script>
+        function updateClock() {
+            const now = new Date();
+
+            // 1. 获取时间并格式化 (补零让画面更整齐)
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            // 2. 将时间渲染到网页上
+            document.getElementById('timeDisplay').textContent = `${hours}:${minutes}:${seconds}`;
+
+            // 3. 获取并格式化日期
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const date = String(now.getDate()).padStart(2, '0');
+            
+            const weekDays = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'];
+            const dayOfWeek = weekDays[now.getDay()];
+
+            // 4. 将日期渲染到网页上
+            document.getElementById('dateDisplay').textContent = `${year}年${month}月${date}日 ${dayOfWeek}`;
+        }
+
+        // 每隔 1000 毫秒（1秒）执行一次 updateClock 函数
+        setInterval(updateClock, 1000);
+
+        // 页面刚加载时立刻执行一次，避免首屏出现全零延迟
+        updateClock();
+    </script>
+</body>
+</html>
