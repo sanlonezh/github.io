@@ -180,7 +180,7 @@
             const year = now.getFullYear();
             const month = now.getMonth() + 1;
             const date = now.getDate();
-            const days = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六'];
+            const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayOfWeek = days[now.getDay()];
             
             document.getElementById('dateDisplay').textContent = `${year}年${month}月${date}日 ${dayOfWeek}`;
