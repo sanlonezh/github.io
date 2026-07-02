@@ -183,7 +183,7 @@
             const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
             const dayOfWeek = days[now.getDay()];
             
-            document.getElementById('dateDisplay').textContent = `${year}年${month}月${date}日 ${dayOfWeek}`;
+            document.getElementById('dateDisplay').textContent = `${dayOfWeek} ${month}月${date}日 ${year}年`;
 
             // 2. 模拟电子墨水屏防烧屏：每分钟微调位置
             const container = document.getElementById('clockContainer');
